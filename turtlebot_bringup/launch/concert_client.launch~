@@ -1,5 +1,3 @@
-<!-- tt -->
-
 <launch>
   <!-- Turtlebot -->
   <arg name="base"              default="$(env TURTLEBOT_BASE)"         doc="mobile base type [create, roomba]"/>

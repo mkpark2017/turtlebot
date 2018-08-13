@@ -1,0 +1,56 @@
+<!--
+  Kobuki's implementation of turtlebot's mobile base.
+ -->
+<launch>
+  <arg name="tf_prefix" default="turtlebot_100" />
+  <arg name="serialport"/> <!-- TODO: use the serialport parameter to set the serial port of kobuki -->
+  <arg name="manager"/>
+  
+  <node pkg="nodelet" type="nodelet" name="mobile_base" args="load kobuki_node/KobukiNodelet $(arg manager)">
+    <param name="wheel_left_joint_name" value="$(arg tf_prefix)/wheel_left_joint" />
+    <param name="wheel_right_joint_name" value="$(arg tf_prefix)/wheel_right_joint" />
+    <rosparam>
+      ##############################################################################
+      # Firmware Source
+      ##############################################################################
+
+      device_port: /dev/kobuki
+
+      # battery voltage at full charge (100%) (float, default: 16.5)
+      battery_capacity: 16.5
+
+      # battery voltage at first warning (15%) (float, default: 13.5)
+      battery_low: 14.0
+
+      # battery voltage at critical level (5%) (float, default: 13.2)
+      battery_dangerous: 13.2
+
+      # If a new command isn't received within this many seconds, the base is stopped (double, default: 0.6)
+      cmd_vel_timeout: 0.6
+
+      # Causes node to publish TF for odom_frame to base_frame. Disable only if you plan to use robot_pose_ekf
+      # (see use_imu_heading description) (bool, default: true)
+      publish_tf: true
+
+      # Use imu readings for heading instead of encoders. That's the normal operation mode for Kobuki, as its
+      # gyro is very reliable. Disable only if you want to fuse encoders and imu readings in a more sophisticated
+      # way, for example filtering and fussing with robot_pose_ekf (bool, default: true)
+      use_imu_heading: true
+    </rosparam>
+
+    <param name="base_frame" value="$(arg tf_prefix)/base_footprint" />
+    <param name="odom_frame" value="$(arg tf_prefix)/odom" />
+    <param name="device_port" value="$(arg serialport)" />
+
+    <remap from="mobile_base/odom" to="odom"/>
+    <!-- Don't do this - force applications to use a velocity mux for redirection  
+      <remap from="mobile_base/commands/velocity" to="cmd_vel"/> 
+    -->
+    <remap from="mobile_base/enable" to="enable"/>
+    <remap from="mobile_base/disable" to="disable"/>
+    <remap from="mobile_base/joint_states" to="joint_states"/>
+  </node>
+  
+  <!-- bumper/cliff to pointcloud -->
+  <include file="$(find turtlebot_bringup)/launch/includes/kobuki/bumper2pc.launch.xml"/>
+</launch>
